@@ -94,11 +94,29 @@ criticNetwork = [
 % [出力] 連続値行動の確率分布（ガウス分布）を決定するパラメータ（平均と標準偏差）
 % [処理内容] 共通パスの出力に、最終的なパラメータを出力するための全結合層を追加します。
 % 出力サイズは行動の次元数の2倍です（各行動次元に対して平均と標準偏差のペアが必要なため）。
-actorNetwork = [
-    commonPath
-    fullyConnectedLayer(numel(actInfo.LowerLimit) * 2, 'Name', 'actor_output')
+
+% layerGraphの初期化と共通層の追加
+actorNetwork =layerGraph(commonPath);
+
+% 平均を出力するブランチ
+meanBranch = fullyConnectedLayer(actInfo.Dimension(1), 'Name', 'mean_output');
+
+% 標準偏差を出力するブランチ
+stdBranch = [
+    fullyConnectedLayer(actInfo.Dimension(1), 'Name', 'std_fc_output')
+    softplusLayer('Name', 'std_output');
 ];
 
+% グラフにブランチを追加
+actorNetwork = addLayers(actorNetwork, meanBranch);
+actorNetwork = addLayers(actorNetwork, stdBranch);
+
+% 共通部分の出力を、2つのブランチの入力に接続
+actorNetwork = connectLayers(actorNetwork, 'relu2', 'mean_output');
+actorNetwork = connectLayers(actorNetwork, 'relu2', 'std_fc_output');
+
+% dlnetworkに変換
+actorNetwork = dlnetwork(actorNetwork);
 
 %% ========================================================================
 %  ブロック2: アクターとクリティックの「表現オブジェクト」を作成
@@ -120,8 +138,7 @@ critic = rlValueRepresentation(criticNetwork, obsInfo, 'Observation', {'observat
 % [出力] actor (rlContinuousGaussianActorオブジェクト)
 % [処理内容] rlContinuousGaussianActor関数を使い、連続値行動のためのアクターを作成します。
 % このアクターは、ガウス分布（正規分布）に従って行動を確率的に選択します。
-actor = rlContinuousGaussianActor(actorNetwork, obsInfo, actInfo);
-
+actor = rlContinuousGaussianActor(actorNetwork, obsInfo, actInfo, 'ActionMeanOutputNames', 'mean_output', 'ActionStandardDeviationOutputNames', 'std_output');
 
 %% ========================================================================
 %  ブロック3: PPOエージェントのオプションを設定
@@ -134,7 +151,7 @@ actor = rlContinuousGaussianActor(actorNetwork, obsInfo, actInfo);
 % [出力] agentOpts (rlPPOAgentOptionsオブジェクト)
 %==========================================================================
 agentOpts = rlPPOAgentOptions(...
-    'SampleTime', ppoParams.SampleTime, ...
+    'SampleTime', ppoParams.Ts, ...
     'ExperienceHorizon', ppoParams.ExperienceHorizon, ...
     'ClipFactor', ppoParams.ClipFactor, ...
     'EntropyLossWeight', ppoParams.EntropyLossWeight, ...

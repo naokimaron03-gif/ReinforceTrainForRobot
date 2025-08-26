@@ -42,5 +42,3 @@ Dencity = 4430;
 %% 地面
 stiffness = 1e6;
 Damping = 1e4;
-
-%% Train
