@@ -5,7 +5,7 @@ mdl = 'xxxx';
 open_system(mdl);
 
 % エージェントブロックのパス
-agentBlk = [mdl, '/CalcAction/RL Agent'];
+agentBlk = [mdl, '/RL Agent'];
 
 % 観測情報の使用定義
 numObs = 30;
@@ -27,7 +27,7 @@ env = rlSimulinkEnv(mdl, agentBlk, obsInfo, actInfo);
 % 'gaitType', 'random': walkerResetFcnに渡す引数。エピソードごとに初期状態をランダム化し、学習のロバスト性を高めるための設定。 
 env.ResetFcn = @(in)walkerResetFcn(in, 'gaitType', 'random');
 
-% DDPGエージェントのオプションを作成
+% エージェントのオプションを作成
 PPOParams.Ts = 0.02;
 PPOParams.ExperienceHorizon = 2048;
 PPOParams.ClipFactor = 0.2;
