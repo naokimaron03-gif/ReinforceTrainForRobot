@@ -99,7 +99,10 @@ criticNetwork = [
 actorNetwork =layerGraph(commonPath);
 
 % 平均を出力するブランチ
-meanBranch = fullyConnectedLayer(actInfo.Dimension(1), 'Name', 'mean_output');
+meanBranch = [
+    fullyConnectedLayer(actInfo.Dimension(1), 'Name', 'mean_output');
+    tanhLayer('Name', 'tanh_mean');
+];
 
 % 標準偏差を出力するブランチ
 stdBranch = [
@@ -138,7 +141,7 @@ critic = rlValueRepresentation(criticNetwork, obsInfo, 'Observation', {'observat
 % [出力] actor (rlContinuousGaussianActorオブジェクト)
 % [処理内容] rlContinuousGaussianActor関数を使い、連続値行動のためのアクターを作成します。
 % このアクターは、ガウス分布（正規分布）に従って行動を確率的に選択します。
-actor = rlContinuousGaussianActor(actorNetwork, obsInfo, actInfo, 'ActionMeanOutputNames', 'mean_output', 'ActionStandardDeviationOutputNames', 'std_output');
+actor = rlContinuousGaussianActor(actorNetwork, obsInfo, actInfo, 'ActionMeanOutputNames', 'tanh_mean', 'ActionStandardDeviationOutputNames', 'std_output');
 
 %% ========================================================================
 %  ブロック3: PPOエージェントのオプションを設定
