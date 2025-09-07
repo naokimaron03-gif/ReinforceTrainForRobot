@@ -35,7 +35,7 @@ PPOParams.EntropyLossWeight = 0.01;
 PPOParams.MiniBatchSize = 64;
 PPOParams.NumEpoch = 4;
 PPOParams.ActorLearnRate = 1e-4;
-PPOParams.CriticLearnRate = 1e-4;
+PPOParams.CriticLearnRate = 1e-3;
 
 Ts = PPOParams.Ts;
 
@@ -62,4 +62,4 @@ agentObj = createPPOAgent(obsInfo, actInfo, PPOParams);
 % agentObj = rlPPOAgent (actor, critic, agentOptions);
 
 % 最大トルク
-Max_Trq = 5;
+Max_Trq = 10;
